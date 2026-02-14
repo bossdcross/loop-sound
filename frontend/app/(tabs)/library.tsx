@@ -46,6 +46,8 @@ export default function LibraryScreen() {
   // Load sounds when screen focuses
   useFocusEffect(
     useCallback(() => {
+      // Track library opened
+      Analytics.libraryOpened();
       loadSounds();
       return () => {
         // Cleanup sound when leaving screen
