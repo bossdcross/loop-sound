@@ -942,6 +942,22 @@ const styles = StyleSheet.create({
   disabledText: {
     color: '#6B7280',
   },
+  webNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 16,
+    gap: 8,
+  },
+  webNoticeText: {
+    color: '#F59E0B',
+    fontSize: 12,
+    flex: 1,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
