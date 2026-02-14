@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, ActivityIndicator, Text, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useAuth } from '../../src/context/AuthContext';
+import { useAuth } from '@/src/context/AuthContext';
 
 export default function AuthCallback() {
   const router = useRouter();
