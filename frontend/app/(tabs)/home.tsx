@@ -290,6 +290,9 @@ export default function HomeScreen() {
         
         const duration = recordingDuration > 0 ? recordingDuration : Math.floor((status.durationMillis || 0) / 1000);
         
+        // Track sound recorded
+        Analytics.soundRecorded(duration);
+        
         setSelectedSound({
           name: `Recording ${new Date().toLocaleTimeString()}`,
           uri,
