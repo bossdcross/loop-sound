@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://loop-sound-hub.preview.emergentagent.com/api"
+BASE_URL = "https://loop-play-studio.preview.emergentagent.com/api"
 
 # Test data
 TEST_USER_DATA = {
