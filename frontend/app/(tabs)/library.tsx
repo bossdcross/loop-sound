@@ -112,7 +112,7 @@ export default function LibraryScreen() {
     }
   };
 
-  const handleDeleteSound = async (soundId: string) => {
+  const handleDeleteSound = async (soundId: string, soundName: string) => {
     Alert.alert(
       'Delete Sound',
       'Are you sure you want to delete this sound?',
@@ -126,6 +126,9 @@ export default function LibraryScreen() {
               const result = await deleteSoundFromStorage(soundId);
               
               if (result.success) {
+                // Track sound deleted
+                Analytics.soundDeleted(soundName);
+                
                 setSounds(prev => prev.filter(s => s.id !== soundId));
                 
                 // Stop if currently playing
