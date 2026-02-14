@@ -62,6 +62,21 @@ export default function HomeScreen() {
   const timerInterval = useRef<NodeJS.Timeout | null>(null);
   const playbackInterval = useRef<NodeJS.Timeout | null>(null);
 
+  // Wheel picker data - hours (0-23) and minutes (0-59)
+  const hoursData = useMemo(() => 
+    Array.from({ length: 24 }, (_, i) => ({
+      value: i,
+      label: i.toString().padStart(2, '0'),
+    })), 
+  []);
+  
+  const minutesData = useMemo(() => 
+    Array.from({ length: 60 }, (_, i) => ({
+      value: i,
+      label: i.toString().padStart(2, '0'),
+    })), 
+  []);
+
   // Request audio permissions on mount
   useEffect(() => {
     setupAudio();
