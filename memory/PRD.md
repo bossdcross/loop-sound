@@ -110,7 +110,29 @@ interface LocalSound {
 - ✅ All environment variables configured
 - ✅ UI fixes verified by user (keyboard input visibility, stop button emphasis)
 - ✅ App returning HTTP 200
+- ✅ PostHog analytics integrated
 - **Ready for deployment**
+
+## Analytics Integration (PostHog)
+PostHog analytics has been integrated to track user behavior. Events tracked:
+- `app_opened` / `app_backgrounded` - App lifecycle
+- `sound_recorded` - When user records audio
+- `sound_uploaded` - When user uploads audio file  
+- `sound_played` / `sound_stopped` - Playback events
+- `sound_saved` / `sound_deleted` - Library management
+- `timer_set` - Timer configuration
+- `library_opened` - Library screen views
+- `settings_viewed` - Settings screen views
+- Screen view tracking for all navigation
+
+### PostHog Setup Required
+To enable analytics, add your PostHog credentials to `/app/frontend/.env`:
+```
+EXPO_PUBLIC_POSTHOG_KEY=your_posthog_project_api_key
+EXPO_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+```
+
+Get your API key from: https://app.posthog.com (Project Settings > API Keys)
 
 ## Future/Backlog Tasks
 
