@@ -355,29 +355,83 @@ export default function HomeScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const asset = result.assets[0];
         
+        // Check file size limit (10MB for free, 50MB for premium)
+        const maxSizeMB = user?.is_premium ? 50 : 10;
+        const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+        const fileSizeMB = (fileInfo as any).size ? (fileInfo as any).size / (1024 * 1024) : 0;
+        
+        if (fileSizeMB > maxSizeMB) {
+          Alert.alert(
+            'File Too Large',
+            user?.is_premium 
+              ? `Maximum file size is ${maxSizeMB}MB. Please choose a smaller file.`
+              : `Free accounts are limited to ${maxSizeMB}MB files. Upgrade to premium for larger uploads.`,
+            user?.is_premium 
+              ? [{ text: 'OK' }]
+              : [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Upgrade', onPress: () => router.push('/(tabs)/profile') },
+                ]
+          );
+          return;
+        }
+        
         // Read file as base64
         const base64 = await FileSystem.readAsStringAsync(asset.uri, {
           encoding: FileSystem.EncodingType.Base64,
         });
         
-        // Get duration (estimate based on file size for now)
-        // In production, you'd use a proper audio duration check
-        const fileInfo = await FileSystem.getInfoAsync(asset.uri);
-        const estimatedDuration = Math.min(
-          (fileInfo as any).size ? Math.floor((fileInfo as any).size / 16000) : 60,
-          user?.is_premium ? 30 * 60 : 5 * 60
-        );
+        // Get actual duration by loading the audio
+        let duration = 60; // Default fallback
+        try {
+          const { sound: tempSound } = await Audio.Sound.createAsync(
+            { uri: asset.uri },
+            { shouldPlay: false }
+          );
+          const status = await tempSound.getStatusAsync();
+          if (status.isLoaded && status.durationMillis) {
+            duration = Math.floor(status.durationMillis / 1000);
+          }
+          await tempSound.unloadAsync();
+        } catch (durationError) {
+          console.log('Could not get exact duration, using estimate');
+          // Fallback to file size estimate
+          duration = Math.min(
+            fileSizeMB ? Math.floor(fileSizeMB * 60) : 60,
+            user?.is_premium ? 30 * 60 : 5 * 60
+          );
+        }
+        
+        // Check max duration limit
+        const maxDuration = user?.is_premium ? 30 * 60 : 5 * 60;
+        if (duration > maxDuration) {
+          Alert.alert(
+            'Audio Too Long',
+            user?.is_premium 
+              ? `Maximum duration is ${formatTime(maxDuration)}. Please choose a shorter file.`
+              : `Free accounts are limited to ${formatTime(maxDuration)} audio. Upgrade to premium for longer sounds.`,
+            user?.is_premium 
+              ? [{ text: 'OK' }]
+              : [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Upgrade', onPress: () => router.push('/(tabs)/profile') },
+                ]
+          );
+          return;
+        }
         
         setSelectedSound({
           name: asset.name || 'Uploaded Sound',
           uri: asset.uri,
           base64,
-          duration: estimatedDuration,
+          duration,
         });
+        
+        Alert.alert('Success', `Audio file "${asset.name}" loaded successfully!`);
       }
     } catch (error) {
       console.error('Error picking file:', error);
-      Alert.alert('Error', 'Failed to pick audio file');
+      Alert.alert('Error', 'Failed to pick audio file. Please try a different file format.');
     }
   };
 
