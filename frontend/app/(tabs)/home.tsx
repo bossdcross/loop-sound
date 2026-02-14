@@ -913,37 +913,50 @@ export default function HomeScreen() {
         visible={showSaveModal}
         transparent
         animationType="slide"
-        onRequestClose={() => setShowSaveModal(false)}
+        onRequestClose={() => {
+          Keyboard.dismiss();
+          setShowSaveModal(false);
+        }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Save Sound</Text>
-              <TouchableOpacity onPress={() => setShowSaveModal(false)}>
-                <Ionicons name="close" size={24} color="#FFFFFF" />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalOverlay}
+          >
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Save Sound</Text>
+                <TouchableOpacity onPress={() => {
+                  Keyboard.dismiss();
+                  setShowSaveModal(false);
+                }}>
+                  <Ionicons name="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+
+              <TextInput
+                style={styles.saveInput}
+                placeholder="Enter sound name"
+                placeholderTextColor="#6B7280"
+                value={soundName}
+                onChangeText={setSoundName}
+                autoFocus
+                returnKeyType="done"
+                onSubmitEditing={handleSaveSound}
+              />
+
+              <TouchableOpacity
+                style={[styles.modalConfirmButton, (isSaving || !soundName.trim()) && styles.buttonDisabled]}
+                onPress={handleSaveSound}
+                disabled={isSaving || !soundName.trim()}
+              >
+                <Text style={styles.modalConfirmText}>
+                  {isSaving ? 'Saving...' : 'Save to Library'}
+                </Text>
               </TouchableOpacity>
             </View>
-
-            <TextInput
-              style={styles.saveInput}
-              placeholder="Enter sound name"
-              placeholderTextColor="#6B7280"
-              value={soundName}
-              onChangeText={setSoundName}
-              autoFocus
-            />
-
-            <TouchableOpacity
-              style={[styles.modalConfirmButton, isSaving && styles.buttonDisabled]}
-              onPress={handleSaveSound}
-              disabled={isSaving || !soundName.trim()}
-            >
-              <Text style={styles.modalConfirmText}>
-                {isSaving ? 'Saving...' : 'Save to Library'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
       </Modal>
 
       {/* Library Modal */}
