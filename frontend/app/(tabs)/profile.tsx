@@ -205,7 +205,7 @@ export default function ProfileScreen() {
         <View style={styles.appInfo}>
           <Text style={styles.appName}>Sound Loop</Text>
           <Text style={styles.appVersion}>Version 1.0.0 (Free Launch)</Text>
-          <Text style={styles.appTagline}>Loop your sounds, find your calm</Text>
+          <Text style={styles.appTagline}>Loop your sounds.</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
