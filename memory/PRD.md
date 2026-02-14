@@ -126,13 +126,13 @@ PostHog analytics has been integrated to track user behavior. Events tracked:
 - Screen view tracking for all navigation
 
 ### PostHog Setup Required
-To enable analytics, add your PostHog credentials to `/app/frontend/.env`:
-```
-EXPO_PUBLIC_POSTHOG_KEY=your_posthog_project_api_key
-EXPO_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
-```
+PostHog is now configured with:
+- API Key: `phc_Bs4AYMi0XJre5j0vujzrvRzy1fsfRpuO1TIadNQ6n2A`
+- Host: `https://us.i.posthog.com`
 
-Get your API key from: https://app.posthog.com (Project Settings > API Keys)
+### Profile/Settings Page Features
+- **Rate App**: Shows message explaining app store rating coming soon, with option to send feedback instead
+- **Send Feedback**: Opens email client to `app.soundloop@gmail.com` with pre-filled subject and body template
 
 ## Future/Backlog Tasks
 
