@@ -25,7 +25,7 @@ import {
   deleteSound as deleteSoundFromStorage,
   LIMITS,
   LocalSound 
-} from '../../src/services/LocalSoundStorage';
+} from '../../services/LocalSoundStorage';
 
 export default function LibraryScreen() {
   const router = useRouter();
