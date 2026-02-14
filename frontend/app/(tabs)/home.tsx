@@ -648,7 +648,7 @@ export default function HomeScreen() {
               />
             </View>
             <Text style={styles.actionButtonText}>
-              {isRecording ? 'Stop Recording' : 'Record'}
+              {isRecording ? 'Stop' : 'Record'}
             </Text>
           </TouchableOpacity>
 
@@ -663,6 +663,16 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
+            style={styles.actionButton}
+            onPress={openLibraryModal}
+          >
+            <View style={[styles.actionIconContainer, styles.libraryIconContainer]}>
+              <Ionicons name="library" size={24} color="#FFFFFF" />
+            </View>
+            <Text style={styles.actionButtonText}>Library</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={[styles.actionButton, !selectedSound && styles.buttonDisabled]}
             onPress={() => {
               if (selectedSound) {
@@ -670,12 +680,12 @@ export default function HomeScreen() {
                 setShowSaveModal(true);
               }
             }}
-            disabled={!selectedSound}
+            disabled={!selectedSound || !!selectedSound.soundId}
           >
-            <View style={[styles.actionIconContainer, !selectedSound && styles.disabledIconContainer]}>
+            <View style={[styles.actionIconContainer, (!selectedSound || selectedSound.soundId) && styles.disabledIconContainer]}>
               <Ionicons name="save" size={24} color="#FFFFFF" />
             </View>
-            <Text style={[styles.actionButtonText, !selectedSound && styles.disabledText]}>
+            <Text style={[styles.actionButtonText, (!selectedSound || selectedSound.soundId) && styles.disabledText]}>
               Save
             </Text>
           </TouchableOpacity>
