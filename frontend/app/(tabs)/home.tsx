@@ -418,6 +418,9 @@ export default function HomeScreen() {
       soundRef.current = newSound;
       setIsPlaying(true);
       
+      // Track sound played
+      Analytics.soundPlayed(selectedSound.name, selectedSound.duration, timerMode);
+      
       if (timerMode === 'duration') {
         const totalSeconds = durationHours * 3600 + durationMinutes * 60;
         const endTime = Date.now() + (totalSeconds * 1000);
