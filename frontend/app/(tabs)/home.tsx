@@ -62,8 +62,13 @@ export default function HomeScreen() {
   // Modals
   const [showTimerModal, setShowTimerModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showLibraryModal, setShowLibraryModal] = useState(false);
   const [soundName, setSoundName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Library sounds
+  const [librarySounds, setLibrarySounds] = useState<LibrarySound[]>([]);
+  const [isLoadingLibrary, setIsLoadingLibrary] = useState(false);
   
   // Refs
   const recordingInterval = useRef<NodeJS.Timeout | null>(null);
