@@ -524,6 +524,16 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Web Platform Notice */}
+        {Platform.OS === 'web' && (
+          <View style={styles.webNotice}>
+            <Ionicons name="information-circle-outline" size={16} color="#F59E0B" />
+            <Text style={styles.webNoticeText}>
+              Recording works best on mobile. Use Expo Go app or upload a file.
+            </Text>
+          </View>
+        )}
       </ScrollView>
 
       {/* Timer Modal */}
