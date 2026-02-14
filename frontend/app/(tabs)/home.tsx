@@ -530,6 +530,9 @@ export default function HomeScreen() {
         throw new Error(result.error || 'Failed to save sound');
       }
       
+      // Track sound saved
+      Analytics.soundSaved(soundName.trim(), selectedSound.duration);
+      
       await loadSoundCount();
       setShowSaveModal(false);
       setSoundName('');
