@@ -231,17 +231,9 @@ export default function HomeScreen() {
       
       if (uri) {
         // Small delay to ensure file is fully written
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 200));
         
-        // Check if file exists
-        const fileInfo = await FileSystem.getInfoAsync(uri);
-        console.log('File info:', fileInfo);
-        
-        if (!fileInfo.exists) {
-          throw new Error('Recording file not found');
-        }
-        
-        // Read file as base64
+        // Read file as base64 - this will fail if file doesn't exist
         const base64 = await FileSystem.readAsStringAsync(uri, {
           encoding: FileSystem.EncodingType.Base64,
         });
@@ -256,7 +248,7 @@ export default function HomeScreen() {
           name: `Recording ${new Date().toLocaleTimeString()}`,
           uri,
           base64,
-          duration,
+          duration: duration > 0 ? duration : 1,
         });
         
         console.log('Recording saved successfully, duration:', duration);
