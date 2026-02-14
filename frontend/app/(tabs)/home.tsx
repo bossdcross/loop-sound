@@ -19,33 +19,25 @@ import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
-import { useAuth } from '../../context/AuthContext';
-import { useRouter } from 'expo-router';
 import WheelPicker from '@quidone/react-native-wheel-picker';
-
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import { 
+  getSounds, 
+  saveSound, 
+  getSoundCount, 
+  LIMITS,
+  LocalSound 
+} from '../../src/services/LocalSoundStorage';
 
 interface SelectedSound {
   name: string;
   uri: string;
-  base64?: string;
   duration: number;
   soundId?: string; // For library sounds
-}
-
-interface LibrarySound {
-  sound_id: string;
-  name: string;
-  duration_seconds: number;
-  created_at: string;
 }
 
 type TimerMode = 'indefinite' | 'duration' | 'alarm';
 
 export default function HomeScreen() {
-  const { user, token, refreshUser } = useAuth();
-  const router = useRouter();
-  
   // Audio state
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -62,7 +54,7 @@ export default function HomeScreen() {
   const [durationMinutes, setDurationMinutes] = useState(5);
   const [alarmTime, setAlarmTime] = useState<Date | null>(null);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
-  const [timerEndTime, setTimerEndTime] = useState<number | null>(null); // Timestamp when timer should end
+  const [timerEndTime, setTimerEndTime] = useState<number | null>(null);
   
   // Modals
   const [showTimerModal, setShowTimerModal] = useState(false);
@@ -72,8 +64,9 @@ export default function HomeScreen() {
   const [isSaving, setIsSaving] = useState(false);
   
   // Library sounds
-  const [librarySounds, setLibrarySounds] = useState<LibrarySound[]>([]);
+  const [librarySounds, setLibrarySounds] = useState<LocalSound[]>([]);
   const [isLoadingLibrary, setIsLoadingLibrary] = useState(false);
+  const [soundCount, setSoundCount] = useState(0);
   
   // App state for background handling
   const appState = useRef(AppState.currentState);
@@ -81,10 +74,9 @@ export default function HomeScreen() {
   // Refs
   const recordingInterval = useRef<NodeJS.Timeout | null>(null);
   const timerInterval = useRef<NodeJS.Timeout | null>(null);
-  const playbackInterval = useRef<NodeJS.Timeout | null>(null);
-  const soundRef = useRef<Audio.Sound | null>(null); // Keep sound ref for background access
+  const soundRef = useRef<Audio.Sound | null>(null);
 
-  // Wheel picker data - hours (0-23) and minutes (0-59)
+  // Wheel picker data
   const hoursData = useMemo(() => 
     Array.from({ length: 24 }, (_, i) => ({
       value: i,
@@ -99,15 +91,14 @@ export default function HomeScreen() {
     })), 
   []);
 
-  // Request audio permissions on mount
   useEffect(() => {
     setupAudio();
+    loadSoundCount();
     return () => {
       cleanup();
     };
   }, []);
 
-  // Handle app state changes for background timer
   useEffect(() => {
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => {
@@ -115,20 +106,21 @@ export default function HomeScreen() {
     };
   }, [timerEndTime, isPlaying]);
 
+  const loadSoundCount = async () => {
+    const count = await getSoundCount();
+    setSoundCount(count);
+  };
+
   const handleAppStateChange = async (nextAppState: AppStateStatus) => {
-    // Only act when returning to foreground
     if (
       appState.current.match(/inactive|background/) &&
       nextAppState === 'active'
     ) {
-      // App has come to foreground - check if timer expired while in background
       if (timerEndTime && isPlaying) {
         const now = Date.now();
         if (now >= timerEndTime) {
-          // Timer expired while in background - stop sound
           await stopSound();
         } else {
-          // Update remaining time display
           const remaining = Math.ceil((timerEndTime - now) / 1000);
           setRemainingTime(remaining);
         }
@@ -140,14 +132,13 @@ export default function HomeScreen() {
   const setupAudio = async () => {
     try {
       await Audio.requestPermissionsAsync();
-      // Set initial audio mode for playback (not recording)
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
         staysActiveInBackground: true,
-        interruptionModeIOS: 1, // DO_NOT_MIX - don't let other audio interrupt
+        interruptionModeIOS: 1,
         shouldDuckAndroid: false,
-        interruptionModeAndroid: 1, // DO_NOT_MIX
+        interruptionModeAndroid: 1,
         playThroughEarpieceAndroid: false,
       });
     } catch (error) {
@@ -167,42 +158,36 @@ export default function HomeScreen() {
     }
     if (recordingInterval.current) clearInterval(recordingInterval.current);
     if (timerInterval.current) clearInterval(timerInterval.current);
-    if (playbackInterval.current) clearInterval(playbackInterval.current);
   };
 
-  // Recording functions
   const startRecording = async () => {
     try {
-      // Check if on web - recording has limited support
       if (Platform.OS === 'web') {
-        // Try to use browser's MediaRecorder API
         try {
           const permissionResult = await Audio.requestPermissionsAsync();
           if (!permissionResult.granted) {
             Alert.alert(
               'Permission Required',
-              'Please allow microphone access to record audio. Check your browser settings.'
+              'Please allow microphone access to record audio.'
             );
             return;
           }
         } catch (permError) {
           Alert.alert(
             'Recording Not Supported',
-            'Audio recording may not work in this browser. For best experience, use the Expo Go app on your mobile device or upload an audio file instead.'
+            'Audio recording may not work in this browser. Use the mobile app or upload a file instead.'
           );
           return;
         }
       }
 
-      // Check duration limit
-      const maxDuration = user?.is_premium ? 30 * 60 : 5 * 60;
+      const maxDuration = LIMITS.MAX_DURATION_SECONDS;
       
-      // Request permissions first
       const permissionResponse = await Audio.requestPermissionsAsync();
       if (!permissionResponse.granted) {
         Alert.alert(
           'Permission Denied',
-          'Microphone permission is required to record audio. Please enable it in your device settings.'
+          'Microphone permission is required to record audio.'
         );
         return;
       }
@@ -213,7 +198,6 @@ export default function HomeScreen() {
         staysActiveInBackground: false,
       });
       
-      // Use a more compatible recording preset
       const recordingOptions = {
         isMeteringEnabled: true,
         android: {
@@ -249,7 +233,6 @@ export default function HomeScreen() {
       setIsRecording(true);
       setRecordingDuration(0);
       
-      // Start duration counter
       recordingInterval.current = setInterval(() => {
         setRecordingDuration(prev => {
           if (prev >= maxDuration - 1) {
@@ -266,7 +249,7 @@ export default function HomeScreen() {
       let errorMessage = 'Failed to start recording. ';
       
       if (Platform.OS === 'web') {
-        errorMessage += 'Web browser recording may not be fully supported. Please use the Expo Go app on your mobile device for recording, or upload an audio file instead.';
+        errorMessage += 'Please use the mobile app for recording, or upload an audio file instead.';
       } else if (error.message?.includes('permission')) {
         errorMessage += 'Please grant microphone permission in your device settings.';
       } else {
@@ -288,45 +271,26 @@ export default function HomeScreen() {
       
       setIsRecording(false);
       
-      // Get status before stopping to check if recording was successful
       const status = await recording.getStatusAsync();
-      console.log('Recording status before stop:', status);
-      
-      // Stop and unload the recording
       await recording.stopAndUnloadAsync();
       
-      // Reset audio mode for playback
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
       });
       
       const uri = recording.getURI();
-      console.log('Recording URI:', uri);
       
       if (uri) {
-        // Small delay to ensure file is fully written
         await new Promise(resolve => setTimeout(resolve, 200));
-        
-        // Read file as base64 - this will fail if file doesn't exist
-        const base64 = await FileSystem.readAsStringAsync(uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        
-        if (!base64 || base64.length === 0) {
-          throw new Error('Recording file is empty');
-        }
         
         const duration = recordingDuration > 0 ? recordingDuration : Math.floor((status.durationMillis || 0) / 1000);
         
         setSelectedSound({
           name: `Recording ${new Date().toLocaleTimeString()}`,
           uri,
-          base64,
           duration: duration > 0 ? duration : 1,
         });
-        
-        console.log('Recording saved successfully, duration:', duration);
       } else {
         throw new Error('No recording URI available');
       }
@@ -344,7 +308,6 @@ export default function HomeScreen() {
     }
   };
 
-  // File picker
   const pickAudioFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -355,34 +318,21 @@ export default function HomeScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const asset = result.assets[0];
         
-        // Check file size limit (10MB for free, 50MB for premium)
-        const maxSizeMB = user?.is_premium ? 50 : 10;
+        // Check file size limit (10MB)
+        const maxSizeMB = 10;
         const fileInfo = await FileSystem.getInfoAsync(asset.uri);
         const fileSizeMB = (fileInfo as any).size ? (fileInfo as any).size / (1024 * 1024) : 0;
         
         if (fileSizeMB > maxSizeMB) {
           Alert.alert(
             'File Too Large',
-            user?.is_premium 
-              ? `Maximum file size is ${maxSizeMB}MB. Please choose a smaller file.`
-              : `Free accounts are limited to ${maxSizeMB}MB files. Upgrade to premium for larger uploads.`,
-            user?.is_premium 
-              ? [{ text: 'OK' }]
-              : [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Upgrade', onPress: () => router.push('/(tabs)/profile') },
-                ]
+            `Maximum file size is ${maxSizeMB}MB. Please choose a smaller file.`
           );
           return;
         }
         
-        // Read file as base64
-        const base64 = await FileSystem.readAsStringAsync(asset.uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-        
-        // Get actual duration by loading the audio
-        let duration = 60; // Default fallback
+        // Get actual duration
+        let duration = 60;
         try {
           const { sound: tempSound } = await Audio.Sound.createAsync(
             { uri: asset.uri },
@@ -395,27 +345,17 @@ export default function HomeScreen() {
           await tempSound.unloadAsync();
         } catch (durationError) {
           console.log('Could not get exact duration, using estimate');
-          // Fallback to file size estimate
           duration = Math.min(
             fileSizeMB ? Math.floor(fileSizeMB * 60) : 60,
-            user?.is_premium ? 30 * 60 : 5 * 60
+            LIMITS.MAX_DURATION_SECONDS
           );
         }
         
         // Check max duration limit
-        const maxDuration = user?.is_premium ? 30 * 60 : 5 * 60;
-        if (duration > maxDuration) {
+        if (duration > LIMITS.MAX_DURATION_SECONDS) {
           Alert.alert(
             'Audio Too Long',
-            user?.is_premium 
-              ? `Maximum duration is ${formatTime(maxDuration)}. Please choose a shorter file.`
-              : `Free accounts are limited to ${formatTime(maxDuration)} audio. Upgrade to premium for longer sounds.`,
-            user?.is_premium 
-              ? [{ text: 'OK' }]
-              : [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Upgrade', onPress: () => router.push('/(tabs)/profile') },
-                ]
+            `Maximum duration is ${LIMITS.MAX_DURATION_MINUTES} minutes. Please choose a shorter file.`
           );
           return;
         }
@@ -423,7 +363,6 @@ export default function HomeScreen() {
         setSelectedSound({
           name: asset.name || 'Uploaded Sound',
           uri: asset.uri,
-          base64,
           duration,
         });
         
@@ -435,12 +374,10 @@ export default function HomeScreen() {
     }
   };
 
-  // Playback functions
   const playSound = async () => {
     if (!selectedSound) return;
     
     try {
-      // Unload existing sound
       if (sound) {
         await sound.unloadAsync();
       }
@@ -448,14 +385,13 @@ export default function HomeScreen() {
         await soundRef.current.unloadAsync();
       }
       
-      // Set audio mode for background playback - this is critical
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
         staysActiveInBackground: true,
-        interruptionModeIOS: 1, // DO_NOT_MIX
+        interruptionModeIOS: 1,
         shouldDuckAndroid: false,
-        interruptionModeAndroid: 1, // DO_NOT_MIX
+        interruptionModeAndroid: 1,
         playThroughEarpieceAndroid: false,
       });
       
@@ -469,10 +405,9 @@ export default function HomeScreen() {
       );
       
       setSound(newSound);
-      soundRef.current = newSound; // Keep ref for background access
+      soundRef.current = newSound;
       setIsPlaying(true);
       
-      // Start timer if not indefinite
       if (timerMode === 'duration') {
         const totalSeconds = durationHours * 3600 + durationMinutes * 60;
         const endTime = Date.now() + (totalSeconds * 1000);
@@ -488,7 +423,6 @@ export default function HomeScreen() {
           startTimer(alarmTime.getTime());
         }
       } else {
-        // Indefinite mode - no timer
         setTimerEndTime(null);
         setRemainingTime(null);
       }
@@ -500,7 +434,6 @@ export default function HomeScreen() {
   };
 
   const stopSound = async () => {
-    // Stop sound from state
     if (sound) {
       try {
         await sound.stopAsync();
@@ -510,7 +443,6 @@ export default function HomeScreen() {
       }
       setSound(null);
     }
-    // Also try to stop from ref (for background scenarios)
     if (soundRef.current) {
       try {
         await soundRef.current.stopAsync();
@@ -529,7 +461,6 @@ export default function HomeScreen() {
     }
   };
 
-  // Watch for timer reaching zero and stop sound
   useEffect(() => {
     if (remainingTime === 0) {
       stopSound();
@@ -541,13 +472,12 @@ export default function HomeScreen() {
       clearInterval(timerInterval.current);
     }
     
-    // Use timestamp-based timer for accurate background handling
     timerInterval.current = setInterval(() => {
       const now = Date.now();
       const remaining = Math.ceil((endTimestamp - now) / 1000);
       
       if (remaining <= 0) {
-        setRemainingTime(0); // Trigger the useEffect to stop sound
+        setRemainingTime(0);
         if (timerInterval.current) {
           clearInterval(timerInterval.current);
           timerInterval.current = null;
@@ -558,47 +488,31 @@ export default function HomeScreen() {
     }, 1000);
   };
 
-  // Save sound to library
-  const saveSound = async () => {
-    if (!selectedSound || !soundName.trim() || !token) return;
+  const handleSaveSound = async () => {
+    if (!selectedSound || !soundName.trim()) return;
     
     // Check limits
-    const maxSounds = user?.is_premium ? 30 : 5;
-    if ((user?.sound_count || 0) >= maxSounds) {
+    if (soundCount >= LIMITS.MAX_SOUNDS) {
       Alert.alert(
         'Limit Reached',
-        user?.is_premium 
-          ? 'You have reached the maximum number of sounds.' 
-          : 'Upgrade to premium to save more sounds.',
-        user?.is_premium ? [{ text: 'OK' }] : [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Upgrade', onPress: () => router.push('/(tabs)/profile') },
-        ]
+        `Maximum ${LIMITS.MAX_SOUNDS} sounds allowed. Delete a sound from your library to add more.`
       );
       return;
     }
     
     setIsSaving(true);
     try {
-      const response = await fetch(`${API_URL}/api/sounds`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: soundName.trim(),
-          audio_data: selectedSound.base64,
-          duration_seconds: selectedSound.duration,
-        }),
-      });
+      const result = await saveSound(
+        soundName.trim(),
+        selectedSound.uri,
+        selectedSound.duration
+      );
       
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || 'Failed to save sound');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save sound');
       }
       
-      await refreshUser();
+      await loadSoundCount();
       setShowSaveModal(false);
       setSoundName('');
       Alert.alert('Success', 'Sound saved to your library!');
@@ -610,7 +524,6 @@ export default function HomeScreen() {
     }
   };
 
-  // Format time
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -622,13 +535,11 @@ export default function HomeScreen() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Set alarm time
   const setAlarmFromPicker = (hours: number, minutes: number) => {
     const now = new Date();
     const alarm = new Date();
     alarm.setHours(hours, minutes, 0, 0);
     
-    // If the time is in the past, set it for tomorrow
     if (alarm <= now) {
       alarm.setDate(alarm.getDate() + 1);
     }
@@ -636,22 +547,11 @@ export default function HomeScreen() {
     setAlarmTime(alarm);
   };
 
-  // Load library sounds
   const loadLibrarySounds = async () => {
-    if (!token) return;
-    
     setIsLoadingLibrary(true);
     try {
-      const response = await fetch(`${API_URL}/api/sounds`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setLibrarySounds(data);
-      }
+      const sounds = await getSounds();
+      setLibrarySounds(sounds);
     } catch (error) {
       console.error('Error loading library sounds:', error);
     } finally {
@@ -659,45 +559,20 @@ export default function HomeScreen() {
     }
   };
 
-  // Open library modal
   const openLibraryModal = () => {
     loadLibrarySounds();
     setShowLibraryModal(true);
   };
 
-  // Select sound from library
-  const selectLibrarySound = async (librarySound: LibrarySound) => {
-    try {
-      // Fetch the full sound data including audio
-      const response = await fetch(`${API_URL}/api/sounds/${librarySound.sound_id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) throw new Error('Failed to load sound');
-      
-      const soundData = await response.json();
-      
-      // Write base64 to temp file
-      const fileUri = FileSystem.cacheDirectory + `sound_${librarySound.sound_id}.m4a`;
-      await FileSystem.writeAsStringAsync(fileUri, soundData.audio_data, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      
-      setSelectedSound({
-        name: librarySound.name,
-        uri: fileUri,
-        base64: soundData.audio_data,
-        duration: librarySound.duration_seconds,
-        soundId: librarySound.sound_id,
-      });
-      
-      setShowLibraryModal(false);
-    } catch (error) {
-      console.error('Error selecting library sound:', error);
-      Alert.alert('Error', 'Failed to load sound from library');
-    }
+  const selectLibrarySound = async (librarySound: LocalSound) => {
+    setSelectedSound({
+      name: librarySound.name,
+      uri: librarySound.uri,
+      duration: librarySound.duration,
+      soundId: librarySound.id,
+    });
+    
+    setShowLibraryModal(false);
   };
 
   return (
@@ -707,7 +582,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Sound Loop</Text>
           <Text style={styles.subtitle}>
-            {user?.is_premium ? 'Premium' : `${user?.sound_count || 0}/5 sounds`}
+            {soundCount}/{LIMITS.MAX_SOUNDS} sounds
           </Text>
         </View>
 
@@ -740,7 +615,7 @@ export default function HomeScreen() {
               <View style={styles.recordingDot} />
               <Text style={styles.recordingText}>Recording... {formatTime(recordingDuration)}</Text>
               <Text style={styles.maxDurationText}>
-                Max: {formatTime(user?.is_premium ? 30 * 60 : 5 * 60)}
+                Max: {formatTime(LIMITS.MAX_DURATION_SECONDS)}
               </Text>
             </View>
           )}
@@ -835,6 +710,7 @@ export default function HomeScreen() {
               }
             }}
             disabled={!selectedSound || !!selectedSound.soundId}
+            testID="save-button"
           >
             <View style={[styles.actionIconContainer, (!selectedSound || selectedSound.soundId) && styles.disabledIconContainer]}>
               <Ionicons name="save" size={24} color="#FFFFFF" />
@@ -850,7 +726,7 @@ export default function HomeScreen() {
           <View style={styles.webNotice}>
             <Ionicons name="information-circle-outline" size={16} color="#F59E0B" />
             <Text style={styles.webNoticeText}>
-              Recording works best on mobile. Use Expo Go app or upload a file.
+              Recording works best on mobile. Use the app or upload a file.
             </Text>
           </View>
         )}
@@ -1056,7 +932,7 @@ export default function HomeScreen() {
 
             <TouchableOpacity
               style={[styles.modalConfirmButton, isSaving && styles.buttonDisabled]}
-              onPress={saveSound}
+              onPress={handleSaveSound}
               disabled={isSaving || !soundName.trim()}
             >
               <Text style={styles.modalConfirmText}>
@@ -1099,7 +975,7 @@ export default function HomeScreen() {
             ) : (
               <FlatList
                 data={librarySounds}
-                keyExtractor={(item) => item.sound_id}
+                keyExtractor={(item) => item.id}
                 style={styles.libraryList}
                 renderItem={({ item }) => (
                   <TouchableOpacity
@@ -1114,7 +990,7 @@ export default function HomeScreen() {
                         {item.name}
                       </Text>
                       <Text style={styles.librarySoundDuration}>
-                        {formatTime(item.duration_seconds)}
+                        {formatTime(item.duration)}
                       </Text>
                     </View>
                     <Ionicons name="chevron-forward" size={20} color="#6B7280" />
