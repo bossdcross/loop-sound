@@ -26,6 +26,7 @@ import {
   LIMITS,
   LocalSound 
 } from '../../services/LocalSoundStorage';
+import { Analytics } from '../../services/analytics';
 
 export default function LibraryScreen() {
   const router = useRouter();
