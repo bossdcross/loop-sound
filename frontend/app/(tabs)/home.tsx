@@ -373,6 +373,9 @@ export default function HomeScreen() {
           duration,
         });
         
+        // Track sound uploaded
+        Analytics.soundUploaded(asset.name || 'Uploaded Sound', duration, fileSizeMB);
+        
         Alert.alert('Success', `Audio file "${asset.name}" loaded successfully!`);
       }
     } catch (error) {
