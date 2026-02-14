@@ -13,12 +13,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { getSoundCount, LIMITS } from '../../services/LocalSoundStorage';
 import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
+import { Analytics } from '../../services/analytics';
 
 export default function ProfileScreen() {
   const [soundCount, setSoundCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
+      // Track settings viewed
+      Analytics.settingsViewed();
       loadSoundCount();
     }, [])
   );
