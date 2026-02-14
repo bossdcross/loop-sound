@@ -26,6 +26,14 @@ interface SelectedSound {
   uri: string;
   base64?: string;
   duration: number;
+  soundId?: string; // For library sounds
+}
+
+interface LibrarySound {
+  sound_id: string;
+  name: string;
+  duration_seconds: number;
+  created_at: string;
 }
 
 type TimerMode = 'indefinite' | 'duration' | 'alarm';
