@@ -184,6 +184,51 @@ export default function LibraryScreen() {
     );
   };
 
+  // Edit sound name
+  const openEditModal = (sound: Sound) => {
+    setEditingSoundId(sound.sound_id);
+    setEditingName(sound.name);
+    setEditModalVisible(true);
+  };
+
+  const closeEditModal = () => {
+    setEditModalVisible(false);
+    setEditingSoundId(null);
+    setEditingName('');
+    Keyboard.dismiss();
+  };
+
+  const saveEditedName = async () => {
+    if (!editingSoundId || !editingName.trim() || !token) return;
+    
+    setIsSaving(true);
+    try {
+      const response = await fetch(`${API_URL}/api/sounds/${editingSoundId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: editingName.trim() }),
+      });
+      
+      if (response.ok) {
+        setSounds(prev => prev.map(s => 
+          s.sound_id === editingSoundId 
+            ? { ...s, name: editingName.trim() } 
+            : s
+        ));
+        closeEditModal();
+      } else {
+        Alert.alert('Error', 'Failed to update sound name');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update sound name');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
