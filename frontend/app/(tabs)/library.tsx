@@ -40,6 +40,12 @@ export default function LibraryScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [currentSound, setCurrentSound] = useState<Audio.Sound | null>(null);
+  
+  // Edit modal state
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingSoundId, setEditingSoundId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Load sounds when screen focuses
   useFocusEffect(
