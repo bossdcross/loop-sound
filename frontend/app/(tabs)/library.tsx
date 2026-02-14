@@ -256,13 +256,23 @@ export default function LibraryScreen() {
         />
       </TouchableOpacity>
       
-      <View style={styles.soundInfo}>
+      <TouchableOpacity 
+        style={styles.soundInfo}
+        onPress={() => openEditModal(item)}
+      >
         <Text style={styles.soundName} numberOfLines={1}>{item.name}</Text>
         <View style={styles.soundMeta}>
           <Text style={styles.soundDuration}>{formatDuration(item.duration_seconds)}</Text>
           <Text style={styles.soundDate}>{formatDate(item.created_at)}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.editButton}
+        onPress={() => openEditModal(item)}
+      >
+        <Ionicons name="pencil-outline" size={18} color="#8B5CF6" />
+      </TouchableOpacity>
       
       <TouchableOpacity
         style={styles.deleteButton}
