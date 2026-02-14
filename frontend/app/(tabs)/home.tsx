@@ -487,6 +487,70 @@ export default function HomeScreen() {
     setAlarmTime(alarm);
   };
 
+  // Load library sounds
+  const loadLibrarySounds = async () => {
+    if (!token) return;
+    
+    setIsLoadingLibrary(true);
+    try {
+      const response = await fetch(`${API_URL}/api/sounds`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setLibrarySounds(data);
+      }
+    } catch (error) {
+      console.error('Error loading library sounds:', error);
+    } finally {
+      setIsLoadingLibrary(false);
+    }
+  };
+
+  // Open library modal
+  const openLibraryModal = () => {
+    loadLibrarySounds();
+    setShowLibraryModal(true);
+  };
+
+  // Select sound from library
+  const selectLibrarySound = async (librarySound: LibrarySound) => {
+    try {
+      // Fetch the full sound data including audio
+      const response = await fetch(`${API_URL}/api/sounds/${librarySound.sound_id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) throw new Error('Failed to load sound');
+      
+      const soundData = await response.json();
+      
+      // Write base64 to temp file
+      const fileUri = FileSystem.cacheDirectory + `sound_${librarySound.sound_id}.m4a`;
+      await FileSystem.writeAsStringAsync(fileUri, soundData.audio_data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      setSelectedSound({
+        name: librarySound.name,
+        uri: fileUri,
+        base64: soundData.audio_data,
+        duration: librarySound.duration_seconds,
+        soundId: librarySound.sound_id,
+      });
+      
+      setShowLibraryModal(false);
+    } catch (error) {
+      console.error('Error selecting library sound:', error);
+      Alert.alert('Error', 'Failed to load sound from library');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
