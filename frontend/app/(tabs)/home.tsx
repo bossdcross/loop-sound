@@ -468,18 +468,25 @@ export default function HomeScreen() {
     }
   }, [remainingTime]);
 
-  const startTimer = (seconds: number) => {
+  const startTimer = (endTimestamp: number) => {
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
     }
     
+    // Use timestamp-based timer for accurate background handling
     timerInterval.current = setInterval(() => {
-      setRemainingTime(prev => {
-        if (prev === null || prev <= 0) {
-          return 0; // Set to 0 to trigger the useEffect
+      const now = Date.now();
+      const remaining = Math.ceil((endTimestamp - now) / 1000);
+      
+      if (remaining <= 0) {
+        setRemainingTime(0); // Trigger the useEffect to stop sound
+        if (timerInterval.current) {
+          clearInterval(timerInterval.current);
+          timerInterval.current = null;
         }
-        return prev - 1;
-      });
+      } else {
+        setRemainingTime(remaining);
+      }
     }, 1000);
   };
 
