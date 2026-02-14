@@ -1267,4 +1267,70 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 16,
   },
+  libraryIconContainer: {
+    backgroundColor: '#10B981',
+  },
+  libraryModalContent: {
+    maxHeight: '70%',
+  },
+  libraryLoading: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  libraryLoadingText: {
+    color: '#9CA3AF',
+    fontSize: 14,
+    marginTop: 16,
+  },
+  libraryEmpty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  libraryEmptyTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  libraryEmptyText: {
+    color: '#6B7280',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  libraryList: {
+    maxHeight: 300,
+  },
+  librarySoundItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2D2D3D',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
+  },
+  librarySoundIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  librarySoundInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  librarySoundName: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  librarySoundDuration: {
+    color: '#8B5CF6',
+    fontSize: 12,
+  },
 });
