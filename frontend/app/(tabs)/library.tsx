@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,25 +17,20 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../context/AuthContext';
 import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system/legacy';
 import { useRouter, useFocusEffect } from 'expo-router';
-
-const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
-
-interface Sound {
-  sound_id: string;
-  name: string;
-  duration_seconds: number;
-  created_at: string;
-}
+import { 
+  getSounds, 
+  updateSoundName, 
+  deleteSound as deleteSoundFromStorage,
+  LIMITS,
+  LocalSound 
+} from '../../src/services/LocalSoundStorage';
 
 export default function LibraryScreen() {
-  const { user, token, refreshUser } = useAuth();
   const router = useRouter();
   
-  const [sounds, setSounds] = useState<Sound[]>([]);
+  const [sounds, setSounds] = useState<LocalSound[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
@@ -57,23 +52,13 @@ export default function LibraryScreen() {
           currentSound.unloadAsync();
         }
       };
-    }, [token])
+    }, [])
   );
 
   const loadSounds = async () => {
-    if (!token) return;
-    
     try {
-      const response = await fetch(`${API_URL}/api/sounds`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSounds(data);
-      }
+      const localSounds = await getSounds();
+      setSounds(localSounds);
     } catch (error) {
       console.error('Error loading sounds:', error);
     } finally {
@@ -85,7 +70,6 @@ export default function LibraryScreen() {
   const handleRefresh = () => {
     setIsRefreshing(true);
     loadSounds();
-    refreshUser();
   };
 
   const playSound = async (soundId: string) => {
@@ -102,22 +86,9 @@ export default function LibraryScreen() {
         return;
       }
       
-      // Fetch sound data
-      const response = await fetch(`${API_URL}/api/sounds/${soundId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) throw new Error('Failed to load sound');
-      
-      const soundData = await response.json();
-      
-      // Write base64 to temp file
-      const fileUri = FileSystem.cacheDirectory + `sound_${soundId}.m4a`;
-      await FileSystem.writeAsStringAsync(fileUri, soundData.audio_data, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      // Find sound
+      const soundData = sounds.find(s => s.id === soundId);
+      if (!soundData) return;
       
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
@@ -125,19 +96,12 @@ export default function LibraryScreen() {
       });
       
       const { sound } = await Audio.Sound.createAsync(
-        { uri: fileUri },
+        { uri: soundData.uri },
         { shouldPlay: true, isLooping: true }
       );
       
       setCurrentSound(sound);
       setPlayingId(soundId);
-      
-      // Handle playback status
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && !status.isPlaying && !status.isBuffering) {
-          // Playback stopped
-        }
-      });
       
     } catch (error) {
       console.error('Error playing sound:', error);
@@ -145,7 +109,7 @@ export default function LibraryScreen() {
     }
   };
 
-  const deleteSound = async (soundId: string) => {
+  const handleDeleteSound = async (soundId: string) => {
     Alert.alert(
       'Delete Sound',
       'Are you sure you want to delete this sound?',
@@ -156,16 +120,10 @@ export default function LibraryScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await fetch(`${API_URL}/api/sounds/${soundId}`, {
-                method: 'DELETE',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                },
-              });
+              const result = await deleteSoundFromStorage(soundId);
               
-              if (response.ok) {
-                setSounds(prev => prev.filter(s => s.sound_id !== soundId));
-                refreshUser();
+              if (result.success) {
+                setSounds(prev => prev.filter(s => s.id !== soundId));
                 
                 // Stop if currently playing
                 if (playingId === soundId && currentSound) {
@@ -174,6 +132,8 @@ export default function LibraryScreen() {
                   setCurrentSound(null);
                   setPlayingId(null);
                 }
+              } else {
+                Alert.alert('Error', result.error || 'Failed to delete sound');
               }
             } catch (error) {
               Alert.alert('Error', 'Failed to delete sound');
@@ -185,8 +145,8 @@ export default function LibraryScreen() {
   };
 
   // Edit sound name
-  const openEditModal = (sound: Sound) => {
-    setEditingSoundId(sound.sound_id);
+  const openEditModal = (sound: LocalSound) => {
+    setEditingSoundId(sound.id);
     setEditingName(sound.name);
     setEditModalVisible(true);
   };
@@ -199,28 +159,21 @@ export default function LibraryScreen() {
   };
 
   const saveEditedName = async () => {
-    if (!editingSoundId || !editingName.trim() || !token) return;
+    if (!editingSoundId || !editingName.trim()) return;
     
     setIsSaving(true);
     try {
-      const response = await fetch(`${API_URL}/api/sounds/${editingSoundId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name: editingName.trim() }),
-      });
+      const result = await updateSoundName(editingSoundId, editingName.trim());
       
-      if (response.ok) {
+      if (result.success) {
         setSounds(prev => prev.map(s => 
-          s.sound_id === editingSoundId 
+          s.id === editingSoundId 
             ? { ...s, name: editingName.trim() } 
             : s
         ));
         closeEditModal();
       } else {
-        Alert.alert('Error', 'Failed to update sound name');
+        Alert.alert('Error', result.error || 'Failed to update sound name');
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to update sound name');
@@ -240,17 +193,15 @@ export default function LibraryScreen() {
     return date.toLocaleDateString();
   };
 
-  const maxSounds = user?.is_premium ? 30 : 5;
-  const soundsRemaining = maxSounds - (user?.sound_count || 0);
-
-  const renderSoundItem = ({ item }: { item: Sound }) => (
+  const renderSoundItem = ({ item }: { item: LocalSound }) => (
     <View style={styles.soundItem}>
       <TouchableOpacity
         style={styles.soundPlayButton}
-        onPress={() => playSound(item.sound_id)}
+        onPress={() => playSound(item.id)}
+        testID={`play-sound-${item.id}`}
       >
         <Ionicons
-          name={playingId === item.sound_id ? 'stop' : 'play'}
+          name={playingId === item.id ? 'stop' : 'play'}
           size={24}
           color="#FFFFFF"
         />
@@ -262,21 +213,23 @@ export default function LibraryScreen() {
       >
         <Text style={styles.soundName} numberOfLines={1}>{item.name}</Text>
         <View style={styles.soundMeta}>
-          <Text style={styles.soundDuration}>{formatDuration(item.duration_seconds)}</Text>
-          <Text style={styles.soundDate}>{formatDate(item.created_at)}</Text>
+          <Text style={styles.soundDuration}>{formatDuration(item.duration)}</Text>
+          <Text style={styles.soundDate}>{formatDate(item.createdAt)}</Text>
         </View>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.editButton}
         onPress={() => openEditModal(item)}
+        testID={`edit-sound-${item.id}`}
       >
         <Ionicons name="pencil-outline" size={18} color="#8B5CF6" />
       </TouchableOpacity>
       
       <TouchableOpacity
         style={styles.deleteButton}
-        onPress={() => deleteSound(item.sound_id)}
+        onPress={() => handleDeleteSound(item.id)}
+        testID={`delete-sound-${item.id}`}
       >
         <Ionicons name="trash-outline" size={20} color="#EF4444" />
       </TouchableOpacity>
@@ -300,25 +253,21 @@ export default function LibraryScreen() {
         <Text style={styles.title}>Library</Text>
         <View style={styles.limitBadge}>
           <Text style={styles.limitText}>
-            {user?.sound_count || 0}/{maxSounds} sounds
+            {sounds.length}/{LIMITS.MAX_SOUNDS} sounds
           </Text>
         </View>
       </View>
 
       {/* Limit Warning */}
-      {!user?.is_premium && soundsRemaining <= 2 && (
-        <TouchableOpacity
-          style={styles.upgradePrompt}
-          onPress={() => router.push('/(tabs)/profile')}
-        >
-          <Ionicons name="star" size={20} color="#F59E0B" />
-          <Text style={styles.upgradeText}>
-            {soundsRemaining === 0
-              ? 'Limit reached! Upgrade for 30 sounds'
-              : `Only ${soundsRemaining} slots left. Upgrade for more!`}
+      {sounds.length >= LIMITS.MAX_SOUNDS - 1 && (
+        <View style={styles.limitWarning}>
+          <Ionicons name="information-circle-outline" size={20} color="#F59E0B" />
+          <Text style={styles.limitWarningText}>
+            {sounds.length >= LIMITS.MAX_SOUNDS
+              ? 'Limit reached! Delete a sound to add more.'
+              : `Only ${LIMITS.MAX_SOUNDS - sounds.length} slot left!`}
           </Text>
-          <Ionicons name="chevron-forward" size={20} color="#F59E0B" />
-        </TouchableOpacity>
+        </View>
       )}
 
       {/* Sound List */}
@@ -330,6 +279,7 @@ export default function LibraryScreen() {
           <TouchableOpacity
             style={styles.goToPlayerButton}
             onPress={() => router.push('/(tabs)/home')}
+            testID="go-to-player-button"
           >
             <Text style={styles.goToPlayerText}>Go to Player</Text>
           </TouchableOpacity>
@@ -338,7 +288,7 @@ export default function LibraryScreen() {
         <FlatList
           data={sounds}
           renderItem={renderSoundItem}
-          keyExtractor={(item) => item.sound_id}
+          keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl
@@ -443,7 +393,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  upgradePrompt: {
+  limitWarning: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(245, 158, 11, 0.1)',
@@ -453,7 +403,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
   },
-  upgradeText: {
+  limitWarningText: {
     flex: 1,
     color: '#F59E0B',
     fontSize: 14,
