@@ -740,59 +740,39 @@ export default function HomeScreen() {
             {timerMode === 'alarm' && (
               <View style={styles.alarmPicker}>
                 <Text style={styles.pickerLabel}>Stop at:</Text>
-                <View style={styles.pickerRow}>
-                  <View style={styles.pickerItem}>
-                    <TouchableOpacity
-                      style={styles.pickerButton}
-                      onPress={() => {
+                <View style={styles.wheelPickerRow}>
+                  <View style={styles.wheelPickerContainer}>
+                    <WheelPicker
+                      data={hoursData}
+                      value={alarmTime?.getHours() || 0}
+                      onValueChanged={({ item: { value } }) => {
                         const current = alarmTime || new Date();
-                        const newHour = (current.getHours() + 1) % 24;
-                        setAlarmFromPicker(newHour, current.getMinutes());
+                        setAlarmFromPicker(value, current.getMinutes());
                       }}
-                    >
-                      <Ionicons name="chevron-up" size={24} color="#8B5CF6" />
-                    </TouchableOpacity>
-                    <Text style={styles.pickerValue}>
-                      {(alarmTime?.getHours() || 0).toString().padStart(2, '0')}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.pickerButton}
-                      onPress={() => {
-                        const current = alarmTime || new Date();
-                        const newHour = (current.getHours() - 1 + 24) % 24;
-                        setAlarmFromPicker(newHour, current.getMinutes());
-                      }}
-                    >
-                      <Ionicons name="chevron-down" size={24} color="#8B5CF6" />
-                    </TouchableOpacity>
-                    <Text style={styles.pickerUnit}>hour</Text>
+                      itemHeight={50}
+                      visibleItemCount={3}
+                      itemTextStyle={styles.wheelItemText}
+                      selectedIndicatorStyle={styles.wheelSelectedIndicator}
+                      width={80}
+                    />
+                    <Text style={styles.wheelLabel}>hour</Text>
                   </View>
-                  <Text style={styles.pickerSeparator}>:</Text>
-                  <View style={styles.pickerItem}>
-                    <TouchableOpacity
-                      style={styles.pickerButton}
-                      onPress={() => {
+                  <Text style={styles.wheelSeparator}>:</Text>
+                  <View style={styles.wheelPickerContainer}>
+                    <WheelPicker
+                      data={minutesData}
+                      value={alarmTime?.getMinutes() || 0}
+                      onValueChanged={({ item: { value } }) => {
                         const current = alarmTime || new Date();
-                        const newMin = (current.getMinutes() + 5) % 60;
-                        setAlarmFromPicker(current.getHours(), newMin);
+                        setAlarmFromPicker(current.getHours(), value);
                       }}
-                    >
-                      <Ionicons name="chevron-up" size={24} color="#8B5CF6" />
-                    </TouchableOpacity>
-                    <Text style={styles.pickerValue}>
-                      {(alarmTime?.getMinutes() || 0).toString().padStart(2, '0')}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.pickerButton}
-                      onPress={() => {
-                        const current = alarmTime || new Date();
-                        const newMin = (current.getMinutes() - 5 + 60) % 60;
-                        setAlarmFromPicker(current.getHours(), newMin);
-                      }}
-                    >
-                      <Ionicons name="chevron-down" size={24} color="#8B5CF6" />
-                    </TouchableOpacity>
-                    <Text style={styles.pickerUnit}>minute</Text>
+                      itemHeight={50}
+                      visibleItemCount={3}
+                      itemTextStyle={styles.wheelItemText}
+                      selectedIndicatorStyle={styles.wheelSelectedIndicator}
+                      width={80}
+                    />
+                    <Text style={styles.wheelLabel}>min</Text>
                   </View>
                 </View>
               </View>
