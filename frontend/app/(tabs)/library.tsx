@@ -234,7 +234,7 @@ export default function LibraryScreen() {
       
       <TouchableOpacity
         style={styles.deleteButton}
-        onPress={() => handleDeleteSound(item.id)}
+        onPress={() => handleDeleteSound(item.id, item.name)}
         testID={`delete-sound-${item.id}`}
       >
         <Ionicons name="trash-outline" size={20} color="#EF4444" />
