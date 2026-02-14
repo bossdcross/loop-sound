@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
+import WheelPicker from '@quidone/react-native-wheel-picker';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
 
