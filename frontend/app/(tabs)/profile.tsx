@@ -39,17 +39,50 @@ export default function ProfileScreen() {
   const handleRateApp = () => {
     Alert.alert(
       'Rate App',
-      'Thank you for using Sound Loop! Rating feature coming soon.',
-      [{ text: 'OK' }]
+      'Thank you for using Sound Loop! App store rating will be available once the app is published. In the meantime, we\'d love your feedback via email!',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Send Feedback', 
+          onPress: () => handleFeedback() 
+        }
+      ]
     );
   };
 
-  const handleFeedback = () => {
-    Alert.alert(
-      'Send Feedback',
-      'We\'d love to hear from you! Feedback feature coming soon.',
-      [{ text: 'OK' }]
+  const handleFeedback = async () => {
+    const email = 'app.soundloop@gmail.com';
+    const subject = encodeURIComponent('Sound Loop App Feedback');
+    const body = encodeURIComponent(
+      'Hi Sound Loop team,\n\n' +
+      'I wanted to share some feedback about the app:\n\n' +
+      '[Your feedback here]\n\n' +
+      '---\n' +
+      'App Version: 1.0.0\n' +
+      'Platform: ' + (Platform.OS === 'web' ? 'Web' : Platform.OS)
     );
+    
+    const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
+    
+    try {
+      const canOpen = await Linking.canOpenURL(mailtoUrl);
+      if (canOpen) {
+        await Linking.openURL(mailtoUrl);
+      } else {
+        // Fallback: show email address to copy
+        Alert.alert(
+          'Send Feedback',
+          `Please email us at:\n\n${email}\n\nWe'd love to hear your thoughts!`,
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        'Send Feedback',
+        `Please email us at:\n\n${email}\n\nWe'd love to hear your thoughts!`,
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   return (
