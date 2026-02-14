@@ -704,39 +704,33 @@ export default function HomeScreen() {
             {timerMode === 'duration' && (
               <View style={styles.durationPicker}>
                 <Text style={styles.pickerLabel}>Stop after:</Text>
-                <View style={styles.pickerRow}>
-                  <View style={styles.pickerItem}>
-                    <TouchableOpacity
-                      style={styles.pickerButton}
-                      onPress={() => setDurationHours(Math.min(23, durationHours + 1))}
-                    >
-                      <Ionicons name="chevron-up" size={24} color="#8B5CF6" />
-                    </TouchableOpacity>
-                    <Text style={styles.pickerValue}>{durationHours}</Text>
-                    <TouchableOpacity
-                      style={styles.pickerButton}
-                      onPress={() => setDurationHours(Math.max(0, durationHours - 1))}
-                    >
-                      <Ionicons name="chevron-down" size={24} color="#8B5CF6" />
-                    </TouchableOpacity>
-                    <Text style={styles.pickerUnit}>hours</Text>
+                <View style={styles.wheelPickerRow}>
+                  <View style={styles.wheelPickerContainer}>
+                    <WheelPicker
+                      data={hoursData}
+                      value={durationHours}
+                      onValueChanged={({ item: { value } }) => setDurationHours(value)}
+                      itemHeight={50}
+                      visibleItemCount={3}
+                      itemTextStyle={styles.wheelItemText}
+                      selectedIndicatorStyle={styles.wheelSelectedIndicator}
+                      width={80}
+                    />
+                    <Text style={styles.wheelLabel}>hours</Text>
                   </View>
-                  <Text style={styles.pickerSeparator}>:</Text>
-                  <View style={styles.pickerItem}>
-                    <TouchableOpacity
-                      style={styles.pickerButton}
-                      onPress={() => setDurationMinutes(Math.min(59, durationMinutes + 5))}
-                    >
-                      <Ionicons name="chevron-up" size={24} color="#8B5CF6" />
-                    </TouchableOpacity>
-                    <Text style={styles.pickerValue}>{durationMinutes.toString().padStart(2, '0')}</Text>
-                    <TouchableOpacity
-                      style={styles.pickerButton}
-                      onPress={() => setDurationMinutes(Math.max(0, durationMinutes - 5))}
-                    >
-                      <Ionicons name="chevron-down" size={24} color="#8B5CF6" />
-                    </TouchableOpacity>
-                    <Text style={styles.pickerUnit}>minutes</Text>
+                  <Text style={styles.wheelSeparator}>:</Text>
+                  <View style={styles.wheelPickerContainer}>
+                    <WheelPicker
+                      data={minutesData}
+                      value={durationMinutes}
+                      onValueChanged={({ item: { value } }) => setDurationMinutes(value)}
+                      itemHeight={50}
+                      visibleItemCount={3}
+                      itemTextStyle={styles.wheelItemText}
+                      selectedIndicatorStyle={styles.wheelSelectedIndicator}
+                      width={80}
+                    />
+                    <Text style={styles.wheelLabel}>min</Text>
                   </View>
                 </View>
               </View>
