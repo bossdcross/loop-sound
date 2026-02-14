@@ -7,7 +7,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://loop-play-studio.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://sound-looper-1.preview.emergentagent.com')
 
 # Test user credentials
 TEST_EMAIL = f"test_{uuid.uuid4().hex[:8]}@example.com"
