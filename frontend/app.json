@@ -11,7 +11,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Record audio to create looping sounds"
+        "NSMicrophoneUsageDescription": "Record audio to create looping sounds",
+        "UIBackgroundModes": ["audio"]
       }
     },
     "android": {
