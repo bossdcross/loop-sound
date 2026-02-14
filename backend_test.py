@@ -11,7 +11,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://sound-looper-1.preview.emergentagent.com/api"
+BASE_URL = "https://looper-mobile.preview.emergentagent.com/api"
 
 # Test data
 TEST_USER_DATA = {
