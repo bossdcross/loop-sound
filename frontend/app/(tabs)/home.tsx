@@ -673,12 +673,12 @@ export default function HomeScreen() {
             <View style={[styles.actionIconContainer, isRecording && styles.recordingIconContainer]}>
               <Ionicons
                 name={isRecording ? 'stop' : 'mic'}
-                size={24}
+                size={isRecording ? 28 : 24}
                 color="#FFFFFF"
               />
             </View>
-            <Text style={styles.actionButtonText}>
-              {isRecording ? 'Stop' : 'Record'}
+            <Text style={[styles.actionButtonText, isRecording && styles.recordingButtonText]}>
+              {isRecording ? 'STOP' : 'Record'}
             </Text>
           </TouchableOpacity>
 
