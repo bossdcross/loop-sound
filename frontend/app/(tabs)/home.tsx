@@ -1164,7 +1164,10 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   recordingButton: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    backgroundColor: 'rgba(255, 59, 59, 0.25)',
+    borderWidth: 2,
+    borderColor: '#FF3B3B',
+    transform: [{ scale: 1.05 }],
   },
   actionIconContainer: {
     width: 48,
@@ -1176,7 +1179,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   recordingIconContainer: {
-    backgroundColor: '#EF4444',
+    backgroundColor: '#FF3B3B',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    shadowColor: '#FF3B3B',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 12,
+    elevation: 8,
   },
   disabledIconContainer: {
     backgroundColor: '#4B5563',
