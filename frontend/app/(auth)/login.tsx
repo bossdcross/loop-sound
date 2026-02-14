@@ -93,7 +93,6 @@ export default function LoginScreen() {
               <Ionicons name="infinite" size={48} color="#8B5CF6" />
             </View>
             <Text style={styles.title}>Sound Loop</Text>
-            <Text style={styles.subtitle}>Record, Upload, or Play Sound...{'\n'}Over and Over</Text>
           </View>
 
           {/* Form */}
