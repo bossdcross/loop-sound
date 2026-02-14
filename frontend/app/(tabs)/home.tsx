@@ -914,6 +914,65 @@ export default function HomeScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Library Modal */}
+      <Modal
+        visible={showLibraryModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowLibraryModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, styles.libraryModalContent]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select from Library</Text>
+              <TouchableOpacity onPress={() => setShowLibraryModal(false)}>
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            {isLoadingLibrary ? (
+              <View style={styles.libraryLoading}>
+                <ActivityIndicator size="large" color="#8B5CF6" />
+                <Text style={styles.libraryLoadingText}>Loading sounds...</Text>
+              </View>
+            ) : librarySounds.length === 0 ? (
+              <View style={styles.libraryEmpty}>
+                <Ionicons name="musical-notes-outline" size={48} color="#4B5563" />
+                <Text style={styles.libraryEmptyTitle}>No saved sounds</Text>
+                <Text style={styles.libraryEmptyText}>
+                  Record or upload a sound and save it to your library first
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={librarySounds}
+                keyExtractor={(item) => item.sound_id}
+                style={styles.libraryList}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.librarySoundItem}
+                    onPress={() => selectLibrarySound(item)}
+                  >
+                    <View style={styles.librarySoundIcon}>
+                      <Ionicons name="musical-note" size={24} color="#8B5CF6" />
+                    </View>
+                    <View style={styles.librarySoundInfo}>
+                      <Text style={styles.librarySoundName} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      <Text style={styles.librarySoundDuration}>
+                        {formatTime(item.duration_seconds)}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#6B7280" />
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
