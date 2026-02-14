@@ -790,6 +790,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={[styles.actionButton, isRecording && styles.recordingButton]}
             onPress={isRecording ? stopRecording : startRecording}
+            testID="record-button"
           >
             <View style={[styles.actionIconContainer, isRecording && styles.recordingIconContainer]}>
               <Ionicons
@@ -806,6 +807,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.actionButton}
             onPress={pickAudioFile}
+            testID="upload-button"
           >
             <View style={styles.actionIconContainer}>
               <Ionicons name="cloud-upload" size={24} color="#FFFFFF" />
@@ -816,6 +818,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.actionButton}
             onPress={openLibraryModal}
+            testID="library-button"
           >
             <View style={[styles.actionIconContainer, styles.libraryIconContainer]}>
               <Ionicons name="library" size={24} color="#FFFFFF" />
