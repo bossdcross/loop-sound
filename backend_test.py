@@ -386,7 +386,7 @@ class SoundLoopAPITester:
         
         response = self.make_request('POST', '/sounds', json=long_sound_data)
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 403:
