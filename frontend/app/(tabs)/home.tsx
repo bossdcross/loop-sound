@@ -1071,34 +1071,34 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center',
   },
-  pickerRow: {
+  wheelPickerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  pickerItem: {
+  wheelPickerContainer: {
     alignItems: 'center',
   },
-  pickerButton: {
-    padding: 8,
-  },
-  pickerValue: {
-    fontSize: 32,
-    fontWeight: '700',
+  wheelItemText: {
+    fontSize: 28,
+    fontWeight: '600',
     color: '#FFFFFF',
-    width: 60,
-    textAlign: 'center',
   },
-  pickerUnit: {
+  wheelSelectedIndicator: {
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderRadius: 8,
+  },
+  wheelLabel: {
     color: '#6B7280',
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 8,
   },
-  pickerSeparator: {
+  wheelSeparator: {
     fontSize: 32,
     fontWeight: '700',
     color: '#FFFFFF',
-    marginHorizontal: 8,
+    marginHorizontal: 12,
+    marginBottom: 24,
   },
   modalConfirmButton: {
     backgroundColor: '#8B5CF6',
