@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
-import { useAuth } from '@/src/context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { useRouter } from 'expo-router';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
