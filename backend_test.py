@@ -72,7 +72,7 @@ class SoundLoopAPITester:
         
         response = self.make_request('POST', '/auth/register', json=TEST_USER_DATA)
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 201 or response.status_code == 200:
@@ -104,7 +104,7 @@ class SoundLoopAPITester:
         
         response = self.make_request('POST', '/auth/login', json=login_data)
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 200:
@@ -131,7 +131,7 @@ class SoundLoopAPITester:
             
         response = self.make_request('GET', '/auth/me')
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 200:
@@ -156,7 +156,7 @@ class SoundLoopAPITester:
             
         response = self.make_request('GET', '/subscription/status')
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 200:
@@ -203,7 +203,7 @@ class SoundLoopAPITester:
         
         response = self.make_request('POST', '/sounds', json=sound_data)
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 200 or response.status_code == 201:
@@ -229,7 +229,7 @@ class SoundLoopAPITester:
             
         response = self.make_request('GET', '/sounds')
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 200:
@@ -258,7 +258,7 @@ class SoundLoopAPITester:
             
         response = self.make_request('GET', f'/sounds/{self.created_sound_id}')
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 200:
@@ -285,7 +285,7 @@ class SoundLoopAPITester:
             
         response = self.make_request('POST', '/subscription/mock-upgrade')
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 200:
@@ -310,7 +310,7 @@ class SoundLoopAPITester:
             
         response = self.make_request('GET', '/subscription/status')
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 200:
@@ -339,7 +339,7 @@ class SoundLoopAPITester:
             
         response = self.make_request('DELETE', f'/sounds/{self.created_sound_id}')
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 200:
@@ -359,7 +359,7 @@ class SoundLoopAPITester:
             
         response = self.make_request('POST', '/auth/logout')
         
-        if not response:
+        if response is None:
             return False
             
         if response.status_code == 200:
