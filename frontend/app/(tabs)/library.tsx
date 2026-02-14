@@ -350,6 +350,61 @@ export default function LibraryScreen() {
           showsVerticalScrollIndicator={false}
         />
       )}
+
+      {/* Edit Name Modal */}
+      <Modal
+        visible={editModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={closeEditModal}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalOverlay}
+          >
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Edit Sound Name</Text>
+                <TouchableOpacity onPress={closeEditModal}>
+                  <Ionicons name="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+
+              <TextInput
+                style={styles.editInput}
+                placeholder="Enter sound name"
+                placeholderTextColor="#6B7280"
+                value={editingName}
+                onChangeText={setEditingName}
+                autoFocus
+                selectTextOnFocus
+                returnKeyType="done"
+                onSubmitEditing={saveEditedName}
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={closeEditModal}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.saveButton, (isSaving || !editingName.trim()) && styles.buttonDisabled]}
+                  onPress={saveEditedName}
+                  disabled={isSaving || !editingName.trim()}
+                >
+                  <Text style={styles.saveButtonText}>
+                    {isSaving ? 'Saving...' : 'Save'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </Modal>
     </SafeAreaView>
   );
 }
