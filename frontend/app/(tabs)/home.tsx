@@ -26,7 +26,7 @@ import {
   getSoundCount, 
   LIMITS,
   LocalSound 
-} from '../../src/services/LocalSoundStorage';
+} from '../../services/LocalSoundStorage';
 
 interface SelectedSound {
   name: string;
