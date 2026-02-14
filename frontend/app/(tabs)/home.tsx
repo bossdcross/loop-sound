@@ -399,7 +399,9 @@ export default function HomeScreen() {
         allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
         staysActiveInBackground: true,
+        interruptionModeIOS: 1, // DO_NOT_MIX
         shouldDuckAndroid: false,
+        interruptionModeAndroid: 1, // DO_NOT_MIX
         playThroughEarpieceAndroid: false,
       });
       
