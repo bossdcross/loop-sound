@@ -30,6 +30,7 @@ import {
   LIMITS,
   LocalSound 
 } from '../../services/LocalSoundStorage';
+import { Analytics } from '../../services/analytics';
 
 interface SelectedSound {
   name: string;
