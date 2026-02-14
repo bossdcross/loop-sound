@@ -385,6 +385,9 @@ export default function HomeScreen() {
       if (sound) {
         await sound.unloadAsync();
       }
+      if (soundRef.current) {
+        await soundRef.current.unloadAsync();
+      }
       
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
@@ -398,20 +401,28 @@ export default function HomeScreen() {
       );
       
       setSound(newSound);
+      soundRef.current = newSound; // Keep ref for background access
       setIsPlaying(true);
       
       // Start timer if not indefinite
       if (timerMode === 'duration') {
         const totalSeconds = durationHours * 3600 + durationMinutes * 60;
+        const endTime = Date.now() + (totalSeconds * 1000);
+        setTimerEndTime(endTime);
         setRemainingTime(totalSeconds);
-        startTimer(totalSeconds);
+        startTimer(endTime);
       } else if (timerMode === 'alarm' && alarmTime) {
         const now = new Date();
         const diff = Math.floor((alarmTime.getTime() - now.getTime()) / 1000);
         if (diff > 0) {
+          setTimerEndTime(alarmTime.getTime());
           setRemainingTime(diff);
-          startTimer(diff);
+          startTimer(alarmTime.getTime());
         }
+      } else {
+        // Indefinite mode - no timer
+        setTimerEndTime(null);
+        setRemainingTime(null);
       }
       
     } catch (error) {
@@ -421,13 +432,29 @@ export default function HomeScreen() {
   };
 
   const stopSound = async () => {
+    // Stop sound from state
     if (sound) {
-      await sound.stopAsync();
-      await sound.unloadAsync();
+      try {
+        await sound.stopAsync();
+        await sound.unloadAsync();
+      } catch (e) {
+        console.log('Error stopping sound from state:', e);
+      }
       setSound(null);
+    }
+    // Also try to stop from ref (for background scenarios)
+    if (soundRef.current) {
+      try {
+        await soundRef.current.stopAsync();
+        await soundRef.current.unloadAsync();
+      } catch (e) {
+        console.log('Error stopping sound from ref:', e);
+      }
+      soundRef.current = null;
     }
     setIsPlaying(false);
     setRemainingTime(null);
+    setTimerEndTime(null);
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
       timerInterval.current = null;
