@@ -90,11 +90,17 @@ export default function LoginScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
+            {/* Loop Visual */}
+            <Image
+              source={{ uri: 'https://images.unsplash.com/photo-1610209455607-89e8b3e0e393?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwyfHxpbmZpbml0eXxlbnwwfHx8cHVycGxlfDE3NzEwNDE0MjN8MA&ixlib=rb-4.1.0&q=85&w=400' }}
+              style={styles.loopImage}
+              resizeMode="cover"
+            />
             <View style={styles.logoContainer}>
-              <Ionicons name="musical-notes" size={48} color="#8B5CF6" />
+              <Ionicons name="infinite" size={48} color="#8B5CF6" />
             </View>
             <Text style={styles.title}>Sound Loop</Text>
-            <Text style={styles.subtitle}>Record, loop, and relax</Text>
+            <Text style={styles.subtitle}>Record, Upload, or Play Sound...{'\n'}Over and Over</Text>
           </View>
 
           {/* Form */}
