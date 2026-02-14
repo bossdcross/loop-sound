@@ -62,6 +62,7 @@ export default function HomeScreen() {
   const [durationMinutes, setDurationMinutes] = useState(5);
   const [alarmTime, setAlarmTime] = useState<Date | null>(null);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
+  const [timerEndTime, setTimerEndTime] = useState<number | null>(null); // Timestamp when timer should end
   
   // Modals
   const [showTimerModal, setShowTimerModal] = useState(false);
@@ -74,10 +75,14 @@ export default function HomeScreen() {
   const [librarySounds, setLibrarySounds] = useState<LibrarySound[]>([]);
   const [isLoadingLibrary, setIsLoadingLibrary] = useState(false);
   
+  // App state for background handling
+  const appState = useRef(AppState.currentState);
+  
   // Refs
   const recordingInterval = useRef<NodeJS.Timeout | null>(null);
   const timerInterval = useRef<NodeJS.Timeout | null>(null);
   const playbackInterval = useRef<NodeJS.Timeout | null>(null);
+  const soundRef = useRef<Audio.Sound | null>(null); // Keep sound ref for background access
 
   // Wheel picker data - hours (0-23) and minutes (0-59)
   const hoursData = useMemo(() => 
