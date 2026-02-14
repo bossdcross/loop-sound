@@ -3,46 +3,59 @@
 ## Original Problem Statement
 Build a mobile app to record or upload sounds and play them back in a loop.
 
+## Current Version: Free Launch (v1.0.0)
+
+### Key Changes from Previous Version
+- **No login required** - App opens directly to Player
+- **Local storage only** - Sounds saved on device using AsyncStorage
+- **No premium tier** - Single free tier with limits
+- **Simplified Profile** - Now shows Settings with storage info and coming soon features
+
+### Launch Limits
+- Max 5 sounds
+- Max 5 minutes per sound
+- Max 10MB file upload
+- All data stored locally on device
+
 ## Core Features
 
 ### Player/Home Screen
-- [x] Access to library of saved sounds
-- [x] Select a sound for looping
-- [x] Play/Stop button for audio playback
-- [x] Upload audio files from device storage
 - [x] Record audio (mobile only)
-- [x] Save sounds to library
+- [x] Upload audio files from device storage
+- [x] Play sounds in loop
+- [x] Select sounds from library via modal
+- [x] Save sounds to local storage
+- [x] File size limit validation (10MB)
+- [x] Duration limit validation (5 min)
 
 ### Timer Functionality
 - [x] Indefinite looping mode
-- [x] Duration timer (stop after X hours/minutes) - max 23h 59m
+- [x] Duration timer (stop after X hours/minutes)
 - [x] Alarm timer (stop at specific wall-clock time)
 - [x] Roller/wheel picker UI for timer settings
 - [x] Background audio playback support (iOS/Android)
 - [x] Timestamp-based timer for background resilience
 
-### User Accounts
-- [x] Email/password authentication
-- [x] Google Sign-In
-- [x] Sounds saved to user account
-- [ ] Apple Sign-In (Future)
-
 ### Library
-- [x] List saved sounds
+- [x] List saved sounds (local storage)
 - [x] Edit sound names
 - [x] Delete sounds
+- [x] Show storage usage (X/5 sounds)
 - [x] KeyboardAvoidingView for edit modal
 
-### Premium Features (Paywall)
-- [ ] RevenueCat integration (Future)
-- Free tier: 5 sounds max, 5 min duration, 10MB upload
-- Premium tier: 30 sounds max, 30 min duration, 50MB upload
+### Settings (Profile Tab)
+- [x] Storage usage display with progress bar
+- [x] Feature limits info
+- [x] Coming Soon section (Premium teaser)
+- [x] Rate App button
+- [x] Send Feedback button
+- [x] App version info
 
 ### UI/UX
 - [x] Modern dark theme
-- [x] Infinity icon on login screen
-- [x] Clean login/signup flow
+- [x] No login screen (direct to player)
 - [x] Bottom tab navigation (Player, Library, Profile)
+- [x] Responsive web preview
 
 ## Technical Architecture
 
@@ -53,72 +66,65 @@ Build a mobile app to record or upload sounds and play them back in a loop.
 - expo-av for audio recording/playback
 - expo-document-picker for file uploads
 - @quidone/react-native-wheel-picker for timer UI
+- AsyncStorage for local sound storage
+- expo-file-system for file management
 
-### Backend
-- FastAPI (Python)
-- MongoDB for data storage
-- JWT authentication
-- Base64 audio storage
+### Backend (Minimal - for future use)
+- FastAPI (Python) - Auth endpoints still exist but unused
+- MongoDB - Still configured but not used in free version
 
 ### Key Files
-- `/app/frontend/app/(tabs)/home.tsx` - Main player screen
-- `/app/frontend/app/(tabs)/library.tsx` - Sound library
-- `/app/frontend/app/(auth)/login.tsx` - Login screen
-- `/app/backend/server.py` - API server
+- `/app/frontend/app/index.tsx` - Redirects to home (no auth)
+- `/app/frontend/app/_layout.tsx` - Simple layout (no AuthProvider)
+- `/app/frontend/app/(tabs)/home.tsx` - Main player screen with local storage
+- `/app/frontend/app/(tabs)/library.tsx` - Sound library with local storage
+- `/app/frontend/app/(tabs)/profile.tsx` - Settings screen
+- `/app/frontend/services/LocalSoundStorage.ts` - Local storage service
 
-## API Endpoints
-- `POST /api/auth/register` - Create account
-- `POST /api/auth/login` - Login
-- `GET /api/auth/me` - Get current user
-- `GET /api/sounds` - List user's sounds
-- `POST /api/sounds` - Save a sound
-- `GET /api/sounds/{id}` - Get sound with audio data
-- `PUT /api/sounds/{id}/name` - Update sound name
-- `DELETE /api/sounds/{id}` - Delete sound
-
-## Database Schema
-- **users**: `{user_id, email, name, password, googleId, is_premium, sound_count}`
-- **sounds**: `{sound_id, user_id, name, audio_data, duration_seconds, created_at}`
+### Local Storage Schema
+```typescript
+interface LocalSound {
+  id: string;        // Generated unique ID
+  name: string;      // Sound name
+  uri: string;       // Local file URI
+  duration: number;  // Duration in seconds
+  createdAt: string; // ISO timestamp
+}
+```
 
 ## What's Implemented (Dec 2025)
 
-### Session 1 - Core Features
-- Authentication (email/password, Google)
-- Audio recording and playback
-- Sound library CRUD
-- Timer functionality (all 3 modes)
-- Background audio configuration
-- Login screen UI with infinity icon
+### Free Launch Version
+- Removed authentication requirement
+- Implemented LocalSoundStorage service
+- Updated all screens to use local storage
+- Simplified Profile to Settings
+- Added "Coming Soon" premium teaser
+- Direct redirect to Player on app launch
 
-### Session 2 - Upload Enhancement
-- Enhanced upload with file size limits
-- Accurate audio duration detection
-- Duration limit validation
-- User feedback on successful upload
-- Added data-testid attributes for testing
-
-## Pending User Verification
-- Background audio playback (cannot test in web environment)
+## Pending Verification
+- Background audio playback (needs real device testing)
 
 ## Future/Backlog Tasks
 
-### P1 - High Priority
-- [ ] Verify background audio on real device
+### P1 - High Priority (For Premium Version)
+- [ ] User authentication (email/Google)
+- [ ] Cloud storage for sounds
+- [ ] RevenueCat integration for paywall
+- [ ] Sync sounds across devices
 
 ### P2 - Medium Priority
-- [ ] RevenueCat integration for paywall
-- [ ] Profile screen functionality (Logout button)
+- [ ] Apple Sign-In
+- [ ] Export/share sounds
+- [ ] Sound categories/folders
 
 ### P3 - Low Priority
-- [ ] Apple Sign-In
+- [ ] Migrate from expo-av to expo-audio/expo-video
 - [ ] Configure babel path aliases (@/*)
-- [ ] Migrate from expo-av to expo-audio/expo-video (SDK 54 deprecation)
-
-## Test Credentials
-- Email: newtest@example.com
-- Password: Test123!
+- [ ] Audio visualization during playback
 
 ## Notes
 - expo-av is deprecated in SDK 54, plan migration to expo-audio/expo-video
-- Premium subscription is MOCKED for testing
-- Recording and background audio only work on mobile (Expo Go app)
+- Recording only works on mobile devices (not web preview)
+- Background audio requires real device testing
+- All sounds are stored locally - no cloud sync in this version
