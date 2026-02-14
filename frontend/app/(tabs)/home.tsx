@@ -116,6 +116,7 @@ export default function HomeScreen() {
   }, [timerEndTime, isPlaying]);
 
   const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+    // Only act when returning to foreground
     if (
       appState.current.match(/inactive|background/) &&
       nextAppState === 'active'
@@ -139,11 +140,13 @@ export default function HomeScreen() {
   const setupAudio = async () => {
     try {
       await Audio.requestPermissionsAsync();
+      // Set initial audio mode for playback (not recording)
       await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
+        allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
         staysActiveInBackground: true,
-        shouldDuckAndroid: true,
+        shouldDuckAndroid: false,
+        playThroughEarpieceAndroid: false,
       });
     } catch (error) {
       console.error('Error setting up audio:', error);
