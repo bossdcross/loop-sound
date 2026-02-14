@@ -183,26 +183,68 @@ export default function HomeScreen() {
       }
       
       setIsRecording(false);
+      
+      // Get status before stopping to check if recording was successful
+      const status = await recording.getStatusAsync();
+      console.log('Recording status before stop:', status);
+      
+      // Stop and unload the recording
       await recording.stopAndUnloadAsync();
       
+      // Reset audio mode for playback
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        playsInSilentModeIOS: true,
+      });
+      
       const uri = recording.getURI();
+      console.log('Recording URI:', uri);
+      
       if (uri) {
+        // Small delay to ensure file is fully written
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Check if file exists
+        const fileInfo = await FileSystem.getInfoAsync(uri);
+        console.log('File info:', fileInfo);
+        
+        if (!fileInfo.exists) {
+          throw new Error('Recording file not found');
+        }
+        
         // Read file as base64
         const base64 = await FileSystem.readAsStringAsync(uri, {
           encoding: FileSystem.EncodingType.Base64,
         });
         
+        if (!base64 || base64.length === 0) {
+          throw new Error('Recording file is empty');
+        }
+        
+        const duration = recordingDuration > 0 ? recordingDuration : Math.floor((status.durationMillis || 0) / 1000);
+        
         setSelectedSound({
           name: `Recording ${new Date().toLocaleTimeString()}`,
           uri,
           base64,
-          duration: recordingDuration,
+          duration,
         });
+        
+        console.log('Recording saved successfully, duration:', duration);
+      } else {
+        throw new Error('No recording URI available');
       }
       
       setRecording(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error stopping recording:', error);
+      setRecording(null);
+      setIsRecording(false);
+      
+      Alert.alert(
+        'Recording Error',
+        `Failed to save recording: ${error.message || 'Unknown error'}. Please try again.`
+      );
     }
   };
 
