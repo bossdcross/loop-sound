@@ -202,12 +202,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 48,
   },
-  loopImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 16,
-  },
   logoContainer: {
     width: 80,
     height: 80,
@@ -216,7 +210,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
-    marginTop: -50,
   },
   title: {
     fontSize: 32,
