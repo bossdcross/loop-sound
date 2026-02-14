@@ -392,15 +392,22 @@ export default function HomeScreen() {
         await soundRef.current.unloadAsync();
       }
       
+      // Set audio mode for background playback - this is critical
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         playsInSilentModeIOS: true,
         staysActiveInBackground: true,
+        shouldDuckAndroid: false,
+        playThroughEarpieceAndroid: false,
       });
       
       const { sound: newSound } = await Audio.Sound.createAsync(
         { uri: selectedSound.uri },
-        { isLooping: true, shouldPlay: true }
+        { 
+          isLooping: true, 
+          shouldPlay: true,
+          volume: 1.0,
+        }
       );
       
       setSound(newSound);
