@@ -403,12 +403,15 @@ async def create_sound(sound_data: SoundCreate, user: User = Depends(get_current
         created_at=now
     )
 
+class SoundUpdate(BaseModel):
+    name: str
+
 @api_router.put("/sounds/{sound_id}")
-async def update_sound(sound_id: str, name: str, user: User = Depends(get_current_user)):
+async def update_sound(sound_id: str, update_data: SoundUpdate, user: User = Depends(get_current_user)):
     """Update sound name."""
     result = await db.sounds.update_one(
         {"sound_id": sound_id, "user_id": user.user_id},
-        {"$set": {"name": name}}
+        {"$set": {"name": update_data.name}}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Sound not found")
