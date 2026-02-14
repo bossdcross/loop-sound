@@ -759,6 +759,7 @@ export default function HomeScreen() {
               style={[styles.playButton, !selectedSound && styles.buttonDisabled]}
               onPress={isPlaying ? stopSound : playSound}
               disabled={!selectedSound}
+              testID="play-stop-button"
             >
               <Ionicons
                 name={isPlaying ? 'stop' : 'play'}
@@ -772,6 +773,7 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.timerButton}
             onPress={() => setShowTimerModal(true)}
+            testID="timer-mode-button"
           >
             <Ionicons name="timer-outline" size={20} color="#8B5CF6" />
             <Text style={styles.timerButtonText}>
