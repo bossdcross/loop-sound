@@ -62,6 +62,8 @@ class SoundLoopAPITester:
             return response
         except Exception as e:
             self.log(f"Request failed: {str(e)}", "ERROR")
+            import traceback
+            traceback.print_exc()
             return None
 
     def test_auth_register(self):
