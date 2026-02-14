@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Sound Loop",
+    "name": "SoundLoop",
     "slug": "sound-loop",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,14 +8,20 @@
     "scheme": "soundloop",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "owner": "soundloop",
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.soundloop.app",
+      "buildNumber": "1",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Record audio to create looping sounds",
-        "UIBackgroundModes": ["audio"]
+        "UIBackgroundModes": ["audio"],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
+      "package": "com.soundloop.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0A0A0F"
@@ -38,7 +44,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "imageWidth": 300,
           "resizeMode": "contain",
           "backgroundColor": "#0A0A0F"
         }
@@ -46,7 +52,7 @@
       [
         "expo-av",
         {
-          "microphonePermission": "Allow Sound Loop to record audio for looping sounds."
+          "microphonePermission": "Allow SoundLoop to record audio for looping sounds."
         }
       ],
       [
@@ -58,6 +64,17 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/YOUR_EAS_PROJECT_ID"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }
