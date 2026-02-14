@@ -447,6 +447,11 @@ export default function HomeScreen() {
   };
 
   const stopSound = async () => {
+    // Track sound stopped
+    if (selectedSound) {
+      Analytics.soundStopped(selectedSound.name);
+    }
+    
     if (sound) {
       try {
         await sound.stopAsync();
