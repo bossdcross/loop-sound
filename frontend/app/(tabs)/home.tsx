@@ -395,6 +395,13 @@ export default function HomeScreen() {
     }
   };
 
+  // Watch for timer reaching zero and stop sound
+  useEffect(() => {
+    if (remainingTime === 0) {
+      stopSound();
+    }
+  }, [remainingTime]);
+
   const startTimer = (seconds: number) => {
     if (timerInterval.current) {
       clearInterval(timerInterval.current);
@@ -402,9 +409,8 @@ export default function HomeScreen() {
     
     timerInterval.current = setInterval(() => {
       setRemainingTime(prev => {
-        if (prev === null || prev <= 1) {
-          stopSound();
-          return null;
+        if (prev === null || prev <= 0) {
+          return 0; // Set to 0 to trigger the useEffect
         }
         return prev - 1;
       });
