@@ -107,6 +107,35 @@ export default function HomeScreen() {
     };
   }, []);
 
+  // Handle app state changes for background timer
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      subscription.remove();
+    };
+  }, [timerEndTime, isPlaying]);
+
+  const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+    if (
+      appState.current.match(/inactive|background/) &&
+      nextAppState === 'active'
+    ) {
+      // App has come to foreground - check if timer expired while in background
+      if (timerEndTime && isPlaying) {
+        const now = Date.now();
+        if (now >= timerEndTime) {
+          // Timer expired while in background - stop sound
+          await stopSound();
+        } else {
+          // Update remaining time display
+          const remaining = Math.ceil((timerEndTime - now) / 1000);
+          setRemainingTime(remaining);
+        }
+      }
+    }
+    appState.current = nextAppState;
+  };
+
   const setupAudio = async () => {
     try {
       await Audio.requestPermissionsAsync();
@@ -124,6 +153,9 @@ export default function HomeScreen() {
   const cleanup = async () => {
     if (sound) {
       await sound.unloadAsync();
+    }
+    if (soundRef.current) {
+      await soundRef.current.unloadAsync();
     }
     if (recording) {
       await recording.stopAndUnloadAsync();
