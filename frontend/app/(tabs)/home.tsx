@@ -1197,6 +1197,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
+  recordingButtonText: {
+    color: '#FF6B6B',
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
   disabledText: {
     color: '#6B7280',
   },
