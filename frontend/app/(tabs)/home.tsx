@@ -98,8 +98,39 @@ export default function HomeScreen() {
   // Recording functions
   const startRecording = async () => {
     try {
+      // Check if on web - recording has limited support
+      if (Platform.OS === 'web') {
+        // Try to use browser's MediaRecorder API
+        try {
+          const permissionResult = await Audio.requestPermissionsAsync();
+          if (!permissionResult.granted) {
+            Alert.alert(
+              'Permission Required',
+              'Please allow microphone access to record audio. Check your browser settings.'
+            );
+            return;
+          }
+        } catch (permError) {
+          Alert.alert(
+            'Recording Not Supported',
+            'Audio recording may not work in this browser. For best experience, use the Expo Go app on your mobile device or upload an audio file instead.'
+          );
+          return;
+        }
+      }
+
       // Check duration limit
       const maxDuration = user?.is_premium ? 30 * 60 : 5 * 60;
+      
+      // Request permissions first
+      const permissionResponse = await Audio.requestPermissionsAsync();
+      if (!permissionResponse.granted) {
+        Alert.alert(
+          'Permission Denied',
+          'Microphone permission is required to record audio. Please enable it in your device settings.'
+        );
+        return;
+      }
       
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
@@ -125,9 +156,20 @@ export default function HomeScreen() {
         });
       }, 1000);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error starting recording:', error);
-      Alert.alert('Error', 'Failed to start recording');
+      
+      let errorMessage = 'Failed to start recording. ';
+      
+      if (Platform.OS === 'web') {
+        errorMessage += 'Web browser recording may not be fully supported. Please use the Expo Go app on your mobile device for recording, or upload an audio file instead.';
+      } else if (error.message?.includes('permission')) {
+        errorMessage += 'Please grant microphone permission in your device settings.';
+      } else {
+        errorMessage += 'Please check your microphone and try again.';
+      }
+      
+      Alert.alert('Recording Error', errorMessage);
     }
   };
 
