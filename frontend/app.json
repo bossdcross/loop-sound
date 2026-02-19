@@ -8,14 +8,16 @@
     "scheme": "soundloop",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-    "owner": "soundloop",
+    "owner": "th3plug",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.soundloop.app",
       "buildNumber": "1",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Record audio to create looping sounds",
-        "UIBackgroundModes": ["audio"],
+        "UIBackgroundModes": [
+          "audio"
+        ],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -67,11 +69,11 @@
     },
     "extra": {
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "a0c226cf-0028-487d-852d-34c0b4d2e597"
       }
     },
     "updates": {
-      "url": "https://u.expo.dev/YOUR_EAS_PROJECT_ID"
+      "url": "https://u.expo.dev/a0c226cf-0028-487d-852d-34c0b4d2e597"
     },
     "runtimeVersion": {
       "policy": "appVersion"
