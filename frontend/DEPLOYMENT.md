@@ -11,9 +11,9 @@ Before deploying, you'll need:
 
 ## Configuration Checklist
 
-### 1. Update `app.json`
+### 1. Replace placeholders in `app.json`
 
-Replace placeholder values:
+This repo still has placeholders for EAS IDs. You must replace these before building.
 
 ```json
 {
@@ -31,16 +31,25 @@ Replace placeholder values:
 }
 ```
 
-**To get your EAS Project ID:**
+Run these commands from `frontend/`:
+
 ```bash
-cd /app/frontend
+cd /workspace/loop-sound/frontend
 eas login
-eas init
+eas project:init --force
+eas project:info
 ```
 
-### 2. Update `eas.json`
+Copy the `ID` shown by `eas project:info` and replace both occurrences in `app.json`:
 
-For iOS submission, update:
+- `expo.extra.eas.projectId`
+- `expo.updates.url` (the final segment after `https://u.expo.dev/`)
+
+Also set `expo.owner` to your real Expo username (from `eas whoami`).
+
+### 2. Replace placeholders in `eas.json`
+
+For iOS submission, fill all three values:
 ```json
 {
   "submit": {
@@ -55,10 +64,44 @@ For iOS submission, update:
 }
 ```
 
+How to get each value:
+
+- `appleId`: the Apple ID email you use for App Store Connect.
+- `ascAppId`: in App Store Connect → **My Apps** → your app → **App Information**; this is the numeric Apple ID (example: `1234567890`).
+  - For a brand new app, first create the app record in App Store Connect using your iOS bundle identifier (`com.soundloop.app`). The Apple ID appears only after the app record exists.
+  - If the app is brand new and you do not have this yet, keep the placeholder (or temporarily remove `ascAppId`) and run `eas submit --platform ios --profile production`; once the app exists, add the numeric Apple ID back to `eas.json`.
+- `appleTeamId`: run `eas credentials --platform ios` and copy the Team ID shown (10 uppercase letters).
+
 For Android submission:
 - Create a service account in Google Play Console
 - Download the JSON key file
-- Save as `google-services.json` in `/app/frontend/`
+- Save as `google-services.json` in `/workspace/loop-sound/frontend/`
+
+### 3. Validate config before build
+
+Run:
+
+```bash
+cd /workspace/loop-sound/frontend
+eas config --platform ios
+eas config --platform android
+```
+
+If placeholders are still present, these commands will show them and you should fix `app.json`/`eas.json` before continuing.
+
+### 4. First submission flow (exact order)
+
+```bash
+cd /workspace/loop-sound/frontend
+
+# 1) Build production binaries
+eas build --profile production --platform ios
+eas build --profile production --platform android
+
+# 2) Submit the completed builds
+eas submit --platform ios --profile production
+eas submit --platform android --profile production
+```
 
 ## Build Commands
 
